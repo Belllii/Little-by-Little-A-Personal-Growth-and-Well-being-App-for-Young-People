@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import com.example.littlebylittle.databinding.FragmentHomeBinding;
-
+import android.content.Intent;
 public class HomeFragment extends Fragment {
 
     private FragmentHomeBinding binding;
@@ -72,10 +72,19 @@ public class HomeFragment extends Fragment {
 
         // Task Planner items - click to navigate or toggle
         binding.rowTaskCheckin.setOnClickListener(v -> {
-            binding.cardMoodCheckin.requestFocus();
-            Toast.makeText(requireContext(), "Select your mood above to complete check-in", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(
+                    requireContext(),
+                    CheckInActivity.class
+            );
+            startActivity(intent);
         });
-
+        binding.cardMoodCheckin.setOnClickListener(v -> {
+            Intent intent = new Intent(
+                    requireContext(),
+                    CheckInActivity.class
+            );
+            startActivity(intent);
+        });
         binding.rowTaskPractice.setOnClickListener(v -> {
             if (getActivity() instanceof MainActivity) {
                 ((MainActivity) getActivity()).selectBottomTab(R.id.nav_practice);
