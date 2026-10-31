@@ -12,7 +12,7 @@ import android.widget.Toast;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
+import android.content.Intent;
 public class CheckInActivity extends Activity {
 
     private RadioGroup moodGroup;
@@ -34,6 +34,15 @@ public class CheckInActivity extends Activity {
         saveButton = findViewById(R.id.saveButton);
 
         saveButton.setOnClickListener(v -> saveCheckIn());
+        Button historyButton = findViewById(R.id.btnViewHistory);
+
+        historyButton.setOnClickListener(v -> {
+            Intent intent = new Intent(
+                    CheckInActivity.this,
+                    CheckInHistoryActivity.class
+            );
+            startActivity(intent);
+        });
     }
 
     private void saveCheckIn() {

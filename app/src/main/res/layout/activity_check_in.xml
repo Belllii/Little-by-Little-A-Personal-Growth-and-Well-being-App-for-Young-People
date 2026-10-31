@@ -35,7 +35,15 @@
             android:text="Take a moment to check in with yourself."
             android:textColor="#68736D"
             android:textSize="16sp" />
-
+        <Button
+            android:id="@+id/btnViewHistory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="View Check-in History"
+            android:textAllCaps="false"
+            android:textColor="@color/purple_primary"
+            android:backgroundTint="@color/purple_pill_bg" />
         <RadioGroup
             android:id="@+id/moodGroup"
             android:layout_width="match_parent"
@@ -115,6 +123,8 @@
             android:gravity="center"
             android:textColor="#607D70"
             android:textSize="16sp" />
+
+
 
     </LinearLayout>
 </ScrollView>

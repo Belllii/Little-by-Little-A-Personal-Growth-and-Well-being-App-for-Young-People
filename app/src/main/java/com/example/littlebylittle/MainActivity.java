@@ -7,7 +7,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import com.example.littlebylittle.databinding.ActivityMainBinding;
 import com.google.android.material.navigation.NavigationBarView;
-
+import android.content.Intent;
+import android.widget.Button;
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
