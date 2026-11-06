@@ -28,6 +28,9 @@
         <activity
             android:name=".CheckInHistoryActivity"
             android:exported="false" />
+        <activity
+            android:name=".JournalHistoryActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

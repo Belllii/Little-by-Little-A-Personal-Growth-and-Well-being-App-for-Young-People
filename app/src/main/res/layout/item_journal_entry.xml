@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:layout_marginBottom="12dp"
+    android:background="@color/card_surface">
+
+    <TextView
+        android:id="@+id/tv_entry_date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="06 Nov 2026, 08:30 PM"
+        android:textColor="@color/purple_primary"
+        android:textSize="13sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tv_entry_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="This is an example journal reflection."
+        android:textColor="@color/text_primary"
+        android:textSize="16sp" />
+
+</LinearLayout>
