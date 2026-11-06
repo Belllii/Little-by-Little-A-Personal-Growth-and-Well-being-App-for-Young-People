@@ -14,4 +14,6 @@ public interface JournalDao {
 
     @Query("SELECT * FROM journal_entries ORDER BY timestamp DESC")
     List<JournalEntry> getAllEntries();
+    @Query("DELETE FROM journal_entries WHERE id = :entryId")
+    void deleteEntry(int entryId);
 }

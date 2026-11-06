@@ -12,7 +12,6 @@
         android:id="@+id/tv_entry_date"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="06 Nov 2026, 08:30 PM"
         android:textColor="@color/purple_primary"
         android:textSize="13sp"
         android:textStyle="bold" />
@@ -22,8 +21,17 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:text="This is an example journal reflection."
         android:textColor="@color/text_primary"
         android:textSize="16sp" />
+
+    <Button
+        android:id="@+id/btn_delete_entry"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:backgroundTint="@color/purple_pill_bg"
+        android:text="Delete"
+        android:textAllCaps="false"
+        android:textColor="@color/purple_primary" />
 
 </LinearLayout>
