@@ -271,21 +271,26 @@ public class HomeFragment extends Fragment {
             backgroundExecutor.execute(() -> {
                 try {
                     AppDatabase db = AppDatabase.getDatabase(requireContext().getApplicationContext());
-                    CheckIn latestCheckIn = db.checkInDao().getLatestCheckIn(userId);
+                    List<CheckIn> userCheckIns = db.checkInDao().getAllCheckIns(userId);
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
                     String todayStr = sdf.format(new Date());
 
-                    boolean isToday = false;
-                    if (latestCheckIn != null && latestCheckIn.getTimestamp() > 0) {
-                        isToday = todayStr.equals(sdf.format(new Date(latestCheckIn.getTimestamp())));
+                    CheckIn todayCheckIn = null;
+                    if (userCheckIns != null) {
+                        for (CheckIn c : userCheckIns) {
+                            if (c.getTimestamp() > 0 && todayStr.equals(sdf.format(new Date(c.getTimestamp())))) {
+                                todayCheckIn = c;
+                                break;
+                            }
+                        }
                     }
 
-                    if (isToday && latestCheckIn != null) {
+                    if (todayCheckIn != null) {
                         // Update today's existing check-in to avoid duplicate counts
-                        latestCheckIn.setMood(moodTitle);
-                        latestCheckIn.setTimestamp(now);
-                        db.checkInDao().updateCheckIn(latestCheckIn);
-                        FirebaseSyncHelper.syncCheckInToRealtimeDb(userId, latestCheckIn);
+                        todayCheckIn.setMood(moodTitle);
+                        todayCheckIn.setTimestamp(now);
+                        db.checkInDao().updateCheckIn(todayCheckIn);
+                        FirebaseSyncHelper.syncCheckInToRealtimeDb(userId, todayCheckIn);
                     } else {
                         CheckIn checkIn = new CheckIn(userId, moodTitle, "Quick daily check-in from Home.", now);
                         db.checkInDao().insertCheckIn(checkIn);
@@ -352,14 +357,17 @@ public class HomeFragment extends Fragment {
                 try {
                     AppDatabase db = AppDatabase.getDatabase(requireContext().getApplicationContext());
                     List<CheckIn> allCheckIns = db.checkInDao().getAllCheckIns(userId);
-                    CheckIn latestCheckIn = db.checkInDao().getLatestCheckIn(userId);
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
+                    String todayStr = sdf.format(new Date());
 
                     boolean isToday = false;
-                    if (latestCheckIn != null && latestCheckIn.getTimestamp() > 0) {
-                        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
-                        String todayStr = sdf.format(new Date());
-                        String checkInStr = sdf.format(new Date(latestCheckIn.getTimestamp()));
-                        isToday = todayStr.equals(checkInStr);
+                    if (allCheckIns != null) {
+                        for (CheckIn c : allCheckIns) {
+                            if (c.getTimestamp() > 0 && todayStr.equals(sdf.format(new Date(c.getTimestamp())))) {
+                                isToday = true;
+                                break;
+                            }
+                        }
                     }
 
                     final boolean completedToday = isToday;

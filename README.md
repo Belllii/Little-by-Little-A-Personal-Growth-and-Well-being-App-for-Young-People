@@ -300,5 +300,5 @@ A formal, typed project report document complying with all course requirements i
 
 ## 👩‍💻 Author & Acknowledgements
 - Developed by **Belllii** (`efatbelly@gmail.com`)
-- Built for **CSE474 / Mobile Application Development Laboratory**
+- Built for **CSE2200 / Mobile Application Development Laboratory**
 - Designed with empathy and care for youth mental health and emotional well-being.
