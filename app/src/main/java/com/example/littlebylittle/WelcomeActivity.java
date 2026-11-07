@@ -61,6 +61,22 @@ public class WelcomeActivity extends AppCompatActivity {
         });
     }
 
+    private final GoogleAuthHelper.GoogleAuthCallback googleAuthCallback = new GoogleAuthHelper.GoogleAuthCallback() {
+        @Override
+        public void onSuccess(com.google.firebase.auth.FirebaseUser user, String displayName, String email) {
+            android.widget.Toast.makeText(WelcomeActivity.this, "Welcome, " + displayName + "! 🌱", android.widget.Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(WelcomeActivity.this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+        }
+
+        @Override
+        public void onError(String errorMessage) {
+            android.widget.Toast.makeText(WelcomeActivity.this, errorMessage, android.widget.Toast.LENGTH_LONG).show();
+        }
+    };
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -68,22 +84,9 @@ public class WelcomeActivity extends AppCompatActivity {
         if (requestCode == GoogleAuthHelper.RC_SIGN_IN) {
             com.google.android.gms.tasks.Task<com.google.android.gms.auth.api.signin.GoogleSignInAccount> task =
                     com.google.android.gms.auth.api.signin.GoogleSignIn.getSignedInAccountFromIntent(data);
-
-            GoogleAuthHelper.handleSignInResult(this, task, new GoogleAuthHelper.GoogleAuthCallback() {
-                @Override
-                public void onSuccess(com.google.firebase.auth.FirebaseUser user, String displayName, String email) {
-                    android.widget.Toast.makeText(WelcomeActivity.this, "Welcome, " + displayName + "! 🌱", android.widget.Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(WelcomeActivity.this, MainActivity.class);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    startActivity(intent);
-                    finish();
-                }
-
-                @Override
-                public void onError(String errorMessage) {
-                    android.widget.Toast.makeText(WelcomeActivity.this, errorMessage, android.widget.Toast.LENGTH_LONG).show();
-                }
-            });
+            GoogleAuthHelper.handleSignInResult(this, task, googleAuthCallback);
+        } else if (requestCode == GoogleAuthHelper.RC_SYSTEM_ACCOUNT) {
+            GoogleAuthHelper.handleSystemAccountResult(this, resultCode, data, googleAuthCallback);
         }
     }
 }
