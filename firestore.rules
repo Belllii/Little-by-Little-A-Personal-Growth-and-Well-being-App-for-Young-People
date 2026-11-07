@@ -1,0 +1,151 @@
+rules_version = '2';
+
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: users/{userId}/journals/{journalId}
+// Fields:
+//   - userId: string (required, immutable) - Must match path userId and request.auth.uid
+//   - content: string (required, mutable) - Non-empty personal thought reflection, max 5000 chars
+//   - timestamp: timestamp | number (required, mutable) - Valid timestamp or positive numeric epoch ms
+//   - id / journalId: string | number (optional, immutable)
+//
+// Collection: community_feed/{postId}
+// Fields:
+//   - authorId: string (required, immutable) - Creator's UID, must match request.auth.uid on create
+//   - authorName: string (required, immutable) - Creator's display name (1-100 chars)
+//   - authorMood: string (optional, immutable) - Mood emoji / string
+//   - content: string (required, mutable by author) - Inspiration post content (1-1000 chars)
+//   - timestamp: number | timestamp (required, immutable) - Creation time
+//   - likeCount: number (optional, mutable by any auth user) - Number of likes, must be >= 0
+//   - likedBy: list (optional, mutable by any auth user) - List of user UIDs, bounded up to 5000 entries
+//   - id / postId: string (optional, immutable)
+//
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    // Domain Validators: Journal Entries
+    function isValidJournalContent(content) {
+      return content is string &&
+             content.size() > 0 &&
+             content.size() <= 5000;
+    }
+
+    function isValidJournalTimestamp(timeVal) {
+      return timeVal is timestamp || (timeVal is number && timeVal > 0);
+    }
+
+    function isValidJournalData(userId) {
+      return hasRequiredFields(['userId', 'content', 'timestamp']) &&
+             request.resource.data.userId == userId &&
+             request.resource.data.userId == request.auth.uid &&
+             isValidJournalContent(request.resource.data.content) &&
+             isValidJournalTimestamp(request.resource.data.timestamp);
+    }
+
+    function isValidJournalCreate(userId) {
+      return isValidJournalData(userId);
+    }
+
+    function isValidJournalUpdate(userId) {
+      return isValidJournalData(userId) &&
+             request.resource.data.userId == resource.data.userId;
+    }
+
+    // Domain Validators: Community Feed Posts
+    function isPostAuthor(postData) {
+      return isAuthenticated() && request.auth.uid == postData.authorId;
+    }
+
+    function isValidPostContent(content) {
+      return content is string &&
+             content.size() > 0 &&
+             content.size() <= 1000;
+    }
+
+    function isValidPostAuthorName(name) {
+      return name is string &&
+             name.size() > 0 &&
+             name.size() <= 100;
+    }
+
+    function isValidPostTimestamp(timeVal) {
+      return (timeVal is number && timeVal > 0) || timeVal is timestamp;
+    }
+
+    function isValidLikedByList(listVal) {
+      return listVal is list && listVal.size() <= 5000;
+    }
+
+    function isValidLikeCount(countVal) {
+      return countVal is number && countVal >= 0;
+    }
+
+    function isValidPostCreate() {
+      return isAuthenticated() &&
+             hasRequiredFields(['authorId', 'authorName', 'content', 'timestamp']) &&
+             request.resource.data.authorId == request.auth.uid &&
+             isValidPostAuthorName(request.resource.data.authorName) &&
+             isValidPostContent(request.resource.data.content) &&
+             isValidPostTimestamp(request.resource.data.timestamp) &&
+             (!('likeCount' in request.resource.data) || isValidLikeCount(request.resource.data.likeCount)) &&
+             (!('likedBy' in request.resource.data) || isValidLikedByList(request.resource.data.likedBy));
+    }
+
+    function isAuthorPostContentUpdate() {
+      return isPostAuthor(resource.data) &&
+             request.resource.data.authorId == resource.data.authorId &&
+             request.resource.data.authorName == resource.data.authorName &&
+             isValidPostContent(request.resource.data.content) &&
+             request.resource.data.diff(resource.data).affectedKeys().hasOnly(['content', 'timestamp']) &&
+             isValidPostTimestamp(request.resource.data.timestamp) &&
+             (!('likeCount' in resource.data) || request.resource.data.likeCount == resource.data.likeCount) &&
+             (!('likedBy' in resource.data) || request.resource.data.likedBy == resource.data.likedBy);
+    }
+
+    function isLikeToggleUpdate() {
+      return isAuthenticated() &&
+             request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likeCount', 'likedBy']) &&
+             request.resource.data.diff(resource.data).affectedKeys().size() > 0 &&
+             isValidLikeCount(request.resource.data.likeCount) &&
+             isValidLikedByList(request.resource.data.likedBy);
+    }
+
+    // Default Deny Rule
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Collection: users/{userId}/journals/{journalId}
+    match /users/{userId}/journals/{journalId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidJournalCreate(userId);
+      allow update: if isOwner(userId) && isValidJournalUpdate(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    // Collection: community_feed/{postId}
+    match /community_feed/{postId} {
+      allow read: if isAuthenticated();
+      allow create: if isValidPostCreate();
+      allow update: if isAuthorPostContentUpdate() || isLikeToggleUpdate();
+      allow delete: if isAuthenticated() && request.auth.uid == resource.data.authorId;
+    }
+  }
+}

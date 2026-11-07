@@ -1,4 +1,3 @@
-
 package com.example.littlebylittle;
 
 import android.view.LayoutInflater;
@@ -19,7 +18,12 @@ import java.util.Locale;
 public class JournalAdapter extends RecyclerView.Adapter<JournalAdapter.JournalViewHolder> {
 
     private final List<JournalEntry> entries;
+    private final OnEditClickListener editListener;
     private final OnDeleteClickListener deleteListener;
+
+    public interface OnEditClickListener {
+        void onEdit(JournalEntry entry);
+    }
 
     public interface OnDeleteClickListener {
         void onDelete(JournalEntry entry);
@@ -27,9 +31,11 @@ public class JournalAdapter extends RecyclerView.Adapter<JournalAdapter.JournalV
 
     public JournalAdapter(
             List<JournalEntry> entries,
+            OnEditClickListener editListener,
             OnDeleteClickListener deleteListener) {
 
         this.entries = new ArrayList<>(entries);
+        this.editListener = editListener;
         this.deleteListener = deleteListener;
     }
 
@@ -51,20 +57,30 @@ public class JournalAdapter extends RecyclerView.Adapter<JournalAdapter.JournalV
         JournalEntry entry = entries.get(position);
 
         SimpleDateFormat dateFormat =
-                new SimpleDateFormat(
-                        "dd MMM yyyy, hh:mm a",
-                        Locale.getDefault()
-                );
+                new SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault());
 
-        holder.dateText.setText(
-                dateFormat.format(new Date(entry.getTimestamp()))
-        );
+        String dateStr = dateFormat.format(new Date(entry.getTimestamp()));
+        if (entry.getTitle() != null && !entry.getTitle().isEmpty()) {
+            holder.dateText.setText(entry.getTitle() + " • " + dateStr);
+        } else {
+            holder.dateText.setText(dateStr);
+        }
 
         holder.contentText.setText(entry.getContent());
 
-        holder.deleteButton.setOnClickListener(v ->
-                deleteListener.onDelete(entry)
-        );
+        if (holder.editButton != null) {
+            holder.editButton.setOnClickListener(v -> {
+                if (editListener != null) {
+                    editListener.onEdit(entry);
+                }
+            });
+        }
+
+        holder.deleteButton.setOnClickListener(v -> {
+            if (deleteListener != null) {
+                deleteListener.onDelete(entry);
+            }
+        });
     }
 
     @Override
@@ -73,9 +89,7 @@ public class JournalAdapter extends RecyclerView.Adapter<JournalAdapter.JournalV
     }
 
     public void removeEntry(JournalEntry entry) {
-
         int position = entries.indexOf(entry);
-
         if (position != -1) {
             entries.remove(position);
             notifyItemRemoved(position);
@@ -86,6 +100,7 @@ public class JournalAdapter extends RecyclerView.Adapter<JournalAdapter.JournalV
 
         TextView dateText;
         TextView contentText;
+        Button editButton;
         Button deleteButton;
 
         public JournalViewHolder(@NonNull View itemView) {
@@ -93,6 +108,7 @@ public class JournalAdapter extends RecyclerView.Adapter<JournalAdapter.JournalV
 
             dateText = itemView.findViewById(R.id.tv_entry_date);
             contentText = itemView.findViewById(R.id.tv_entry_content);
+            editButton = itemView.findViewById(R.id.btn_edit_entry);
             deleteButton = itemView.findViewById(R.id.btn_delete_entry);
         }
     }

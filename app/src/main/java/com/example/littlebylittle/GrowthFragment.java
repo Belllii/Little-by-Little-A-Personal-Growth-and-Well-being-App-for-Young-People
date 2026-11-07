@@ -1,6 +1,7 @@
 package com.example.littlebylittle;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,11 +11,17 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class GrowthFragment extends Fragment {
 
+    private static final String TAG = "GrowthFragment";
+
+    private MoodProgressView moodProgressView;
     private TextView totalCheckIns;
     private TextView totalJournals;
     private TextView latestMood;
@@ -36,6 +43,7 @@ public class GrowthFragment extends Fragment {
                               @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        moodProgressView = view.findViewById(R.id.mood_progress_view);
         totalCheckIns = view.findViewById(R.id.tv_total_checkins);
         totalJournals = view.findViewById(R.id.tv_total_journals);
         latestMood = view.findViewById(R.id.tv_latest_mood);
@@ -47,54 +55,59 @@ public class GrowthFragment extends Fragment {
     }
 
     private void loadGrowthData() {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        final String userId = currentUser != null ? currentUser.getUid() : "anonymous";
 
         databaseExecutor.execute(() -> {
+            try {
+                AppDatabase db = AppDatabase.getDatabase(requireContext().getApplicationContext());
 
-            AppDatabase db = AppDatabase.getDatabase(
-                    requireContext().getApplicationContext()
-            );
+                int checkInCount = db.checkInDao().getTotalCheckIns(userId);
+                int journalCount = db.journalDao().getTotalJournalEntries(userId);
+                CheckIn latestCheckIn = db.checkInDao().getLatestCheckIn(userId);
 
-            int checkInCount = db.checkInDao().getTotalCheckIns();
+                // Sync stats to Firebase Realtime Database
+                FirebaseSyncHelper.updateStatsInRealtimeDb(userId, checkInCount, journalCount);
 
-            int journalCount = db.journalDao().getTotalJournalEntries();
+                if (getActivity() == null) return;
 
-            CheckIn latestCheckIn = db.checkInDao().getLatestCheckIn();
+                requireActivity().runOnUiThread(() -> {
+                    if (!isAdded()) return;
 
-            if (getActivity() == null) return;
+                    totalCheckIns.setText(String.valueOf(checkInCount));
+                    totalJournals.setText(String.valueOf(journalCount));
 
-            requireActivity().runOnUiThread(() -> {
+                    if (moodProgressView != null) {
+                        moodProgressView.setProgress(checkInCount, 7);
+                    }
 
-                if (!isAdded()) return;
+                    if (latestCheckIn != null && latestCheckIn.getMood() != null) {
+                        latestMood.setText(latestCheckIn.getMood());
+                    } else {
+                        latestMood.setText("No check-ins yet");
+                    }
 
-                totalCheckIns.setText(String.valueOf(checkInCount));
-                totalJournals.setText(String.valueOf(journalCount));
+                    if (checkInCount == 0 && journalCount == 0) {
+                        growthMessage.setText("Your journey starts with one little step. 💜");
+                    } else {
+                        growthMessage.setText(
+                                "You've taken " + checkInCount
+                                        + " mood check-ins and written "
+                                        + journalCount
+                                        + " journal entries. Keep going! 🌱"
+                        );
+                    }
+                });
 
-                if (latestCheckIn != null) {
-                    latestMood.setText(latestCheckIn.getMood());
-                } else {
-                    latestMood.setText("No check-ins yet");
-                }
-
-                if (checkInCount == 0 && journalCount == 0) {
-                    growthMessage.setText(
-                            "Your journey starts with one little step. 💜"
-                    );
-                } else {
-                    growthMessage.setText(
-                            "You've taken " + checkInCount
-                                    + " mood check-ins and written "
-                                    + journalCount
-                                    + " journal entries. Keep going! 🌱"
-                    );
-                }
-            });
+            } catch (Exception e) {
+                Log.e(TAG, "Error loading growth data", e);
+            }
         });
     }
 
     @Override
     public void onResume() {
         super.onResume();
-
         if (databaseExecutor != null) {
             loadGrowthData();
         }
@@ -109,6 +122,7 @@ public class GrowthFragment extends Fragment {
             databaseExecutor = null;
         }
 
+        moodProgressView = null;
         totalCheckIns = null;
         totalJournals = null;
         latestMood = null;

@@ -10,7 +10,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 
 @Database(
         entities = {CheckIn.class, JournalEntry.class},
-        version = 2,
+        version = 3,
         exportSchema = false
 )
 public abstract class AppDatabase extends RoomDatabase {
@@ -20,18 +20,6 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract CheckInDao checkInDao();
 
     public abstract JournalDao journalDao();
-
-    static final Migration MIGRATION_1_2 = new Migration(1, 2) {
-        @Override
-        public void migrate(SupportSQLiteDatabase database) {
-            database.execSQL(
-                    "CREATE TABLE IF NOT EXISTS journal_entries (" +
-                            "id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
-                            "content TEXT, " +
-                            "timestamp INTEGER NOT NULL)"
-            );
-        }
-    };
 
     public static AppDatabase getDatabase(Context context) {
 
@@ -44,7 +32,7 @@ public abstract class AppDatabase extends RoomDatabase {
                                     AppDatabase.class,
                                     "little_by_little_database"
                             )
-                            .addMigrations(MIGRATION_1_2)
+                            .fallbackToDestructiveMigration()
                             .build();
                 }
             }

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<prompts>
+    <prompt id="1" category="Self-Compassion">
+        <title>Being Gentle With Yourself</title>
+        <question>What is something you struggled with today that you can forgive yourself for?</question>
+        <affirmation>I am learning every day, and mistakes are a natural part of growth.</affirmation>
+    </prompt>
+    <prompt id="2" category="Social Confidence">
+        <title>One Brave Interaction</title>
+        <question>What is one small conversation or social moment you handled recently?</question>
+        <affirmation>Confidence is built through tiny, consistent acts of courage.</affirmation>
+    </prompt>
+    <prompt id="3" category="Managing Overwhelm">
+        <title>Simplifying the Day</title>
+        <question>If you could focus on just one small priority right now, what would bring you the most relief?</question>
+        <affirmation>I do not need to solve everything today. One step at a time is enough.</affirmation>
+    </prompt>
+    <prompt id="4" category="Gratitude">
+        <title>Noticing the Little Things</title>
+        <question>What was one quiet moment of comfort, beauty, or kindness you experienced today?</question>
+        <affirmation>There is always a small spark of goodness when I choose to look for it.</affirmation>
+    </prompt>
+</prompts>
