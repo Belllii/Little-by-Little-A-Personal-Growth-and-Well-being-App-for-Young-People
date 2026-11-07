@@ -31,6 +31,14 @@ public class LoginActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
 
+        if (mAuth.getCurrentUser() != null) {
+            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+            return;
+        }
+
         btnLogin.setOnClickListener(v -> loginUser());
 
         tvRegister.setOnClickListener(v -> {
@@ -64,6 +72,9 @@ public class LoginActivity extends AppCompatActivity {
                         Intent intent = new Intent(
                                 LoginActivity.this,
                                 MainActivity.class);
+
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
+                                Intent.FLAG_ACTIVITY_CLEAR_TASK);
 
                         startActivity(intent);
                         finish();

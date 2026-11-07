@@ -28,7 +28,6 @@ public class HomeFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Profile Avatar Click
-        // Profile Avatar Click
         binding.ivAvatar.setOnClickListener(v -> {
 
             if (FirebaseAuth.getInstance().getCurrentUser() != null) {
@@ -43,8 +42,9 @@ public class HomeFragment extends Fragment {
 
                 Intent intent = new Intent(
                         requireContext(),
-                        LoginActivity.class);
+                        WelcomeActivity.class);
 
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
             }
         });

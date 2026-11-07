@@ -11,13 +11,15 @@
         android:gravity="center_horizontal"
         android:padding="28dp">
 
+        <!-- Profile Avatar -->
         <ImageView
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:src="@drawable/ic_avatar"
             android:contentDescription="Profile avatar"
-            android:layout_marginTop="50dp"/>
+            android:layout_marginTop="50dp" />
 
+        <!-- Profile Heading -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -25,8 +27,21 @@
             android:textSize="28sp"
             android:textStyle="bold"
             android:textColor="#57427D"
-            android:layout_marginTop="20dp"/>
+            android:layout_marginTop="20dp" />
 
+        <!-- User Name -->
+        <TextView
+            android:id="@+id/tvProfileName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Your Name"
+            android:textSize="23sp"
+            android:textStyle="bold"
+            android:textColor="#57427D"
+            android:gravity="center"
+            android:layout_marginTop="25dp" />
+
+        <!-- User Email -->
         <TextView
             android:id="@+id/tvProfileEmail"
             android:layout_width="match_parent"
@@ -36,14 +51,36 @@
             android:textColor="#555555"
             android:gravity="center"
             android:padding="20dp"
-            android:layout_marginTop="20dp"/>
+            android:layout_marginTop="10dp" />
 
+        <!-- Edit Name -->
+        <EditText
+            android:id="@+id/etEditName"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:hint="Enter your new name"
+            android:padding="12dp"
+            android:singleLine="true"
+            android:inputType="textPersonName"
+            android:layout_marginTop="20dp"
+            android:background="@android:drawable/edit_text" />
+
+        <!-- Update Name Button -->
+        <Button
+            android:id="@+id/btnUpdateName"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:text="Update Name"
+            android:layout_marginTop="12dp" />
+
+        <!-- Logout Button -->
         <Button
             android:id="@+id/btnLogout"
             android:layout_width="match_parent"
             android:layout_height="55dp"
             android:text="Logout"
-            android:layout_marginTop="35dp"/>
+            android:layout_marginTop="35dp" />
 
     </LinearLayout>
+
 </ScrollView>

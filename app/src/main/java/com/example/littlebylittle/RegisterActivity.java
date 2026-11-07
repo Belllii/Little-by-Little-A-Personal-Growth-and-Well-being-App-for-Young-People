@@ -8,27 +8,47 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
+import android.content.Intent;
+import android.widget.TextView;
 
 public class RegisterActivity extends AppCompatActivity {
 
     EditText etName, etEmail, etPassword;
     Button btnRegister;
+    TextView tvLogin;
 
     FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mAuth = FirebaseAuth.getInstance();
+
+        if (mAuth.getCurrentUser() != null) {
+            navigateToHome();
+            return;
+        }
+
         setContentView(R.layout.activity_register);
 
         etName = findViewById(R.id.etName);
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
         btnRegister = findViewById(R.id.btnRegister);
-
-        mAuth = FirebaseAuth.getInstance();
+        tvLogin = findViewById(R.id.tvLogin);
 
         btnRegister.setOnClickListener(v -> registerUser());
+
+        if (tvLogin != null) {
+            tvLogin.setOnClickListener(v -> {
+                Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                startActivity(intent);
+                finish();
+            });
+        }
     }
 
     private void registerUser() {
@@ -56,10 +76,33 @@ public class RegisterActivity extends AppCompatActivity {
 
                     if (task.isSuccessful()) {
 
-                        Toast.makeText(this,
-                                "Account created successfully!",
-                                Toast.LENGTH_LONG).show();
+                        FirebaseUser user = mAuth.getCurrentUser();
 
+                        if (user != null) {
+
+                            UserProfileChangeRequest profileUpdates =
+                                    new UserProfileChangeRequest.Builder()
+                                            .setDisplayName(name)
+                                            .build();
+
+                            user.updateProfile(profileUpdates)
+                                    .addOnCompleteListener(profileTask -> {
+
+                                        if (profileTask.isSuccessful()) {
+                                            Toast.makeText(this,
+                                                    "Account created successfully!",
+                                                    Toast.LENGTH_LONG).show();
+                                        } else {
+                                            Toast.makeText(this,
+                                                    "Account created, but name could not be saved.",
+                                                    Toast.LENGTH_LONG).show();
+                                        }
+
+                                        navigateToHome();
+                                    });
+                        } else {
+                            navigateToHome();
+                        }
                     } else {
 
                         Toast.makeText(this,
@@ -68,5 +111,12 @@ public class RegisterActivity extends AppCompatActivity {
                                 Toast.LENGTH_LONG).show();
                     }
                 });
+    }
+
+    private void navigateToHome() {
+        Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 }
