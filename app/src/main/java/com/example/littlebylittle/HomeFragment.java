@@ -24,8 +24,12 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
+import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -170,7 +174,6 @@ public class HomeFragment extends Fragment {
 
         // Task Planner items
         binding.rowTaskCheckin.setOnClickListener(v -> openCheckInActivity(null));
-        binding.cardMoodCheckin.setOnClickListener(v -> openCheckInActivity(null));
 
         binding.rowTaskPractice.setOnClickListener(v -> {
             if (getActivity() instanceof MainActivity) {
@@ -248,15 +251,55 @@ public class HomeFragment extends Fragment {
     }
 
     private void onMoodSelected(String moodTitle, String feedback) {
-        binding.tvMoodFeedback.setText(feedback);
+        // Show message directly on card without navigating to CheckInActivity
+        binding.tvMoodFeedback.setText("🌱 " + moodTitle + "\n\n" + feedback);
         binding.tvMoodFeedback.setVisibility(View.VISIBLE);
 
         binding.badgeTaskCheckin.setText("Complete");
-        binding.badgeTaskCheckin.setBackgroundResource(R.drawable.bg_pill_solid);
+        binding.badgeTaskCheckin.setBackgroundResource(R.drawable.bg_pill_complete);
         binding.badgeTaskCheckin.setTextColor(getResources().getColor(R.color.white));
 
-        // Lab 8: Passing Data Between Activities via Intent extras
-        openCheckInActivity(moodTitle);
+        saveQuickCheckIn(moodTitle);
+    }
+
+    private void saveQuickCheckIn(String moodTitle) {
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        final String userId = currentUser != null ? currentUser.getUid() : "anonymous";
+        long now = System.currentTimeMillis();
+
+        if (backgroundExecutor != null && !backgroundExecutor.isShutdown() && getContext() != null) {
+            backgroundExecutor.execute(() -> {
+                try {
+                    AppDatabase db = AppDatabase.getDatabase(requireContext().getApplicationContext());
+                    CheckIn latestCheckIn = db.checkInDao().getLatestCheckIn(userId);
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
+                    String todayStr = sdf.format(new Date());
+
+                    boolean isToday = false;
+                    if (latestCheckIn != null && latestCheckIn.getTimestamp() > 0) {
+                        isToday = todayStr.equals(sdf.format(new Date(latestCheckIn.getTimestamp())));
+                    }
+
+                    if (isToday && latestCheckIn != null) {
+                        // Update today's existing check-in to avoid duplicate counts
+                        latestCheckIn.setMood(moodTitle);
+                        latestCheckIn.setTimestamp(now);
+                        db.checkInDao().updateCheckIn(latestCheckIn);
+                        FirebaseSyncHelper.syncCheckInToRealtimeDb(userId, latestCheckIn);
+                    } else {
+                        CheckIn checkIn = new CheckIn(userId, moodTitle, "Quick daily check-in from Home.", now);
+                        db.checkInDao().insertCheckIn(checkIn);
+                        FirebaseSyncHelper.syncCheckInToRealtimeDb(userId, checkIn);
+                    }
+
+                    if (getActivity() != null) {
+                        requireActivity().runOnUiThread(this::refreshHomeStatus);
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "Error saving quick check-in", e);
+                }
+            });
+        }
     }
 
     private void openCheckInActivity(String preselectedMood) {
@@ -308,11 +351,11 @@ public class HomeFragment extends Fragment {
             backgroundExecutor.execute(() -> {
                 try {
                     AppDatabase db = AppDatabase.getDatabase(requireContext().getApplicationContext());
-                    int totalCheckIns = db.checkInDao().getTotalCheckIns(userId);
+                    List<CheckIn> allCheckIns = db.checkInDao().getAllCheckIns(userId);
                     CheckIn latestCheckIn = db.checkInDao().getLatestCheckIn(userId);
 
                     boolean isToday = false;
-                    if (latestCheckIn != null) {
+                    if (latestCheckIn != null && latestCheckIn.getTimestamp() > 0) {
                         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
                         String todayStr = sdf.format(new Date());
                         String checkInStr = sdf.format(new Date(latestCheckIn.getTimestamp()));
@@ -320,7 +363,7 @@ public class HomeFragment extends Fragment {
                     }
 
                     final boolean completedToday = isToday;
-                    final int streakDays = Math.max(1, totalCheckIns);
+                    final int streakDays = calculateConsecutiveDayStreak(allCheckIns);
 
                     if (getActivity() != null) {
                         requireActivity().runOnUiThread(() -> {
@@ -342,6 +385,53 @@ public class HomeFragment extends Fragment {
                 }
             });
         }
+    }
+
+    private int calculateConsecutiveDayStreak(List<CheckIn> checkIns) {
+        if (checkIns == null || checkIns.isEmpty()) {
+            return 0;
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
+        String todayStr = sdf.format(new Date());
+
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DAY_OF_YEAR, -1);
+        String yesterdayStr = sdf.format(cal.getTime());
+
+        TreeSet<String> distinctDatesDesc = new TreeSet<>(Collections.reverseOrder());
+        for (CheckIn c : checkIns) {
+            if (c.getTimestamp() > 0) {
+                distinctDatesDesc.add(sdf.format(new Date(c.getTimestamp())));
+            }
+        }
+
+        if (distinctDatesDesc.isEmpty()) {
+            return 0;
+        }
+
+        String latestDate = distinctDatesDesc.first();
+        if (!latestDate.equals(todayStr) && !latestDate.equals(yesterdayStr)) {
+            return 0;
+        }
+
+        int streak = 0;
+        Calendar checkCal = Calendar.getInstance();
+        if (latestDate.equals(yesterdayStr)) {
+            checkCal.add(Calendar.DAY_OF_YEAR, -1);
+        }
+
+        while (true) {
+            String expectedDate = sdf.format(checkCal.getTime());
+            if (distinctDatesDesc.contains(expectedDate)) {
+                streak++;
+                checkCal.add(Calendar.DAY_OF_YEAR, -1);
+            } else {
+                break;
+            }
+        }
+
+        return Math.max(1, streak);
     }
 
     @Override

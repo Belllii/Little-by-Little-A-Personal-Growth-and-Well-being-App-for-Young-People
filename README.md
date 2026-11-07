@@ -33,13 +33,13 @@
 Young people and students today navigate high expectations, academic stress, digital overwhelm, and social anxiety. Traditional productivity apps are often rigid, punitive, or trigger guilt when streaks lapse.
 
 **Little by Little** addresses these challenges through gentle, clinically informed micro-habits:
-1. **Daily Emotional Check-ins**: Safe emotional labelling with low cognitive barrier.
-2. **Social Skills Gym**: Low-pressure scenario branching simulations to build communication confidence.
-3. **Guided Reflection Journaling**: Positive reframing and emotional debriefing with full CRUD persistence.
-4. **Mindful Calm Session (Foreground Service)**: Focused 5-minute breathing timers running with foreground system notifications.
-5. **Support Circle & Content Providers**: Direct contact with a trusted buddy through system contacts and dialer intents.
+1. **Daily Emotional Check-ins**: Safe emotional labelling with low cognitive barrier, providing instant inline CBT grounding feedback directly on the card and robust calendar-distinct streak tracking.
+2. **Social Skills Gym**: Infinite procedural auto-generating scenario simulations (`PracticeScenarioGenerator`) with instant communication impact feedback to build confidence in real-world dilemmas.
+3. **Guided Reflection Journaling**: Positive reframing and emotional debriefing with full CRUD persistence across SQLite Room and Cloud Firestore.
+4. **Mindful Calm Session (Foreground Service)**: Focused 5-minute breathing timers running with foreground system notifications and bound IPC countdown.
+5. **Support Circle & Content Providers**: Direct contact with a trusted buddy through system contacts (`ContactsContract`) and dialer intents (`ACTION_DIAL`).
 6. **Kindred Minds Community (Firestore)**: Real-time uplifting peer support feed with likes and shared micro-wins.
-7. **My Growth Analytics (Custom View)**: Compassionate visual feedback on progress through a custom circular arc gauge.
+7. **My Growth Analytics (Custom View)**: Compassionate visual feedback on progress through a custom circular arc gauge (`MoodProgressView`).
 
 ---
 
@@ -116,7 +116,9 @@ graph TD
 - **RecyclerView & Adapters**:
   - [`JournalHistoryActivity.java`](app/src/main/java/com/example/littlebylittle/JournalHistoryActivity.java): `RecyclerView` + [`JournalAdapter.java`](app/src/main/java/com/example/littlebylittle/JournalAdapter.java) with edit and delete callbacks.
   - [`CommunityFeedActivity.java`](app/src/main/java/com/example/littlebylittle/CommunityFeedActivity.java): `RecyclerView` + [`CommunityAdapter.java`](app/src/main/java/com/example/littlebylittle/CommunityAdapter.java) with real-time support counter toggles.
-- **UX Principles**: Calming color palette (lavender, soft purple, sage green), visible affordances, and zero-state illustrations.
+- **Procedural Scenario Generation & Dynamic UI**:
+  - [`PracticeScenarioGenerator.java`](app/src/main/java/com/example/littlebylittle/PracticeScenarioGenerator.java) algorithmically synthesizes dilemma scenarios dynamically rendering choice options and instant psychological feedback in [`PracticeFragment.java`](app/src/main/java/com/example/littlebylittle/PracticeFragment.java) with smooth programmatic auto-scroll.
+- **UX Principles**: Calming color palette (lavender, soft purple, sage green), botanical watercolor artwork on Welcome screen, visible affordances, and zero-state illustrations.
 
 ### Lab 10: Android Components
 - **Android Services**:
@@ -142,6 +144,7 @@ graph TD
 - **Database Manipulation (Room SQLite)**:
   - SQLite abstraction via Jetpack Room: [`AppDatabase.java`](app/src/main/java/com/example/littlebylittle/AppDatabase.java), [`CheckInDao.java`](app/src/main/java/com/example/littlebylittle/CheckInDao.java), [`JournalDao.java`](app/src/main/java/com/example/littlebylittle/JournalDao.java).
   - Background asynchronous execution via `Executors.newSingleThreadExecutor()` preventing ANR errors.
+  - Implements `@Update void updateCheckIn(CheckIn checkIn)` and distinct calendar date streak aggregation (`calculateConsecutiveDayStreak`), preventing multiple mood taps on the same day from creating duplicate records or inflating streak metrics.
 - **Firebase Suite**:
   - **Firebase Authentication**: User registration, login, profile updates, and secure session management.
   - **Firebase Realtime Database**: Synchronizes emotional check-ins partitioned by UID (`users/{uid}/checkins`).
@@ -155,13 +158,18 @@ graph TD
 
 | Welcome & Onboarding | Login Screen | Registration Screen |
 |:---:|:---:|:---:|
-| ![Welcome Screen](docs/screenshots/logout_welcome.png) | ![Login Screen](docs/screenshots/login_screen.png) | ![Registration Screen](docs/screenshots/reg_check.png) |
-| *Entry portal for logged-out users* | *Email/password authentication* | *New member account creation* |
+| ![Welcome Screen](docs/screenshots/welcome_flower_screen.png) | ![Login Screen](docs/screenshots/login_screen.png) | ![Registration Screen](docs/screenshots/reg_check.png) |
+| *Gentle entry portal with lavender flower artwork* | *Email/password authentication with validation* | *New member account creation* |
 
-| Home Dashboard | Mindful Calm Session (Foreground) | Kindred Minds Community |
+| Home Dashboard (Calendar Streak) | Inline CBT Grounding Check-in | Mindful Calm Session (Foreground) |
 |:---:|:---:|:---:|
-| ![Home Screen](docs/screenshots/home_loaded.png) | ![Mindful Calm](docs/screenshots/calm_running.png) | ![Community Feed](docs/screenshots/community_screen.png) |
-| *Personalized greeting & streak* | *Foreground service & bound timer* | *Firestore real-time shared feed* |
+| ![Home Screen](docs/screenshots/home_streak_fixed.png) | ![Inline Mood Feedback](docs/screenshots/home_mood_overwhelmed_clicked.png) | ![Mindful Calm](docs/screenshots/calm_running.png) |
+| *Accurate calendar streak & ZenQuotes API* | *Instant grounding advice on card click* | *Foreground service & bound timer* |
+
+| Social Skills Gym (Auto-Generated) | Actionable Social Feedback | Kindred Minds Community (Firestore) |
+|:---:|:---:|:---:|
+| ![Auto-Generated Scenario](docs/screenshots/practice_gym_auto_generated.png) | ![Social Guidance Feedback](docs/screenshots/practice_gym_feedback_visible.png) | ![Community Feed](docs/screenshots/community_screen.png) |
+| *Infinite procedural scenario generator* | *Empathetic psychological guidance* | *Real-time peer support stream* |
 
 | Daily Check-in Form | Check-in History (ListView) | Dynamic Item Deletion |
 |:---:|:---:|:---:|
@@ -173,15 +181,15 @@ graph TD
 | ![Journal Screen](docs/screenshots/journal_screen.png) | ![Journal History](docs/screenshots/journal_history_screen.png) | ![Edit Journal](docs/screenshots/edit_journal_screen.png) |
 | *Positive reflection prompt* | *RecyclerView + JournalAdapter* | *Intent extras & update CRUD* |
 
-| My Growth (Custom View) | Social Skills Gym | Profile & Account |
+| My Growth (Custom View) | Profile & Account | Support Circle (Buddy) |
 |:---:|:---:|:---:|
-| ![My Growth](docs/screenshots/growth_screen.png) | ![Practice Gym](docs/screenshots/practice_screen.png) | ![Profile Management](docs/screenshots/profile_updated.png) |
-| *MoodProgressView circular gauge* | *Scenario branching choices* | *Profile name edit & avatar* |
+| ![My Growth](docs/screenshots/growth_screen.png) | ![Profile Management](docs/screenshots/profile_updated.png) | ![Trusted Contact](docs/screenshots/trusted_contact_screen.png) |
+| *MoodProgressView circular gauge* | *Profile name edit & avatar sync* | *Trusted contact configuration* |
 
-| Support Circle (Buddy) | Contacts Content Provider | Direct Dialer Intent |
-|:---:|:---:|:---:|
-| ![Trusted Contact](docs/screenshots/trusted_contact_screen.png) | ![Contacts Picker](docs/screenshots/contacts_picker.png) | ![Phone Dialer](docs/screenshots/dialer_screen.png) |
-| *Trusted contact configuration* | *ContactsContract query* | *Implicit Intent (ACTION_DIAL)* |
+| Contacts Content Provider | Direct Dialer Intent |
+|:---:|:---:|
+| ![Contacts Picker](docs/screenshots/contacts_picker.png) | ![Phone Dialer](docs/screenshots/dialer_screen.png) |
+| *ContactsContract query* | *Implicit Intent (ACTION_DIAL)* |
 
 ---
 

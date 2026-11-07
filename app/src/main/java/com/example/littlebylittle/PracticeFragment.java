@@ -1,4 +1,3 @@
-
 package com.example.littlebylittle;
 
 import android.content.Context;
@@ -10,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,6 +23,7 @@ import com.google.firebase.database.FirebaseDatabase;
 
 public class PracticeFragment extends Fragment {
 
+    private ScrollView scrollView;
     private TextView tvScenarioCount;
     private ProgressBar pbScenario;
     private TextView tvScenarioTitle;
@@ -33,83 +34,14 @@ public class PracticeFragment extends Fragment {
     private Button btnOptionB;
     private Button btnOptionC;
     private Button btnNextScenario;
+    private Button btnAutoGenerate;
 
     private View cardCompletion;
     private Button btnPracticeAgain;
+    private Button btnContinueAuto;
 
-    private int currentScenario = 0;
-
-    private final String[] titles = {
-            "Starting a conversation",
-            "Joining a group conversation",
-            "Asking someone for help",
-            "Expressing disagreement politely",
-            "Setting personal boundaries"
-    };
-
-    private final String[] descriptions = {
-            "You are sitting beside a classmate before class begins. You would like to start a conversation. What could you say?",
-            "A group of classmates are discussing a topic that interests you. You would like to join their conversation. What could you do?",
-            "You are having difficulty understanding an assignment. What could you say to someone who might help?",
-            "A friend suggests something you do not agree with. How could you express your opinion respectfully?",
-            "Someone asks you to do something, but you are not comfortable with it. How could you respond?"
-    };
-
-    private final String[][] options = {
-            {
-                    "Hi! How is your day going?",
-                    "Wait for them to start every conversation.",
-                    "Ask several personal questions immediately."
-            },
-            {
-                    "Listen briefly, then ask a related question.",
-                    "Interrupt and immediately change the topic.",
-                    "Assume they do not want you to join."
-            },
-            {
-                    "Could you please explain this part to me?",
-                    "Pretend you understand everything.",
-                    "Demand that someone complete it for you."
-            },
-            {
-                    "I see your point, but I think differently.",
-                    "Tell them their opinion is completely stupid.",
-                    "Agree even though you have a different opinion."
-            },
-            {
-                    "I'm sorry, but I'm not comfortable with that.",
-                    "Agree even though you do not want to.",
-                    "Respond angrily without explaining."
-            }
-    };
-
-    private final String[][] feedback = {
-            {
-                    "A friendly, simple question is a good way to open a conversation. You do not need a perfect opening line.",
-                    "Waiting is also an option, but starting with a small greeting can create an opportunity to connect.",
-                    "Personal questions may feel overwhelming at first. Begin with a simple, friendly topic."
-            },
-            {
-                    "Listening first and asking a related question can help you enter the conversation naturally.",
-                    "Interrupting may make it difficult for others to follow. Try finding a natural moment to speak.",
-                    "You cannot always know what others are thinking. A polite question can help you find out."
-            },
-            {
-                    "This clearly explains what you need while giving the other person a chance to help.",
-                    "It is okay not to understand something. Asking questions is a normal part of learning.",
-                    "Asking for an explanation is more respectful and useful than expecting someone to do the work for you."
-            },
-            {
-                    "You can disagree while still respecting another person's perspective. This is a useful communication skill.",
-                    "Strong language can hurt the conversation. Try explaining your point calmly instead.",
-                    "You are allowed to have a different opinion. You do not have to agree with everything."
-            },
-            {
-                    "This communicates your boundary clearly and respectfully. You are allowed to say no.",
-                    "You do not have to accept every request. It is okay to communicate what you are comfortable with.",
-                    "Expressing your boundary calmly can make your message easier to understand."
-            }
-    };
+    private int currentScenarioIndex = 0;
+    private PracticeScenario currentScenarioObj;
 
     @Nullable
     @Override
@@ -132,6 +64,10 @@ public class PracticeFragment extends Fragment {
 
         super.onViewCreated(view, savedInstanceState);
 
+        if (view instanceof ScrollView) {
+            scrollView = (ScrollView) view;
+        }
+
         tvScenarioCount = view.findViewById(R.id.tv_scenario_count);
         pbScenario = view.findViewById(R.id.pb_practice_scenario);
         tvScenarioTitle = view.findViewById(R.id.tv_scenario_title);
@@ -142,59 +78,94 @@ public class PracticeFragment extends Fragment {
         btnOptionB = view.findViewById(R.id.btn_option_b);
         btnOptionC = view.findViewById(R.id.btn_option_c);
         btnNextScenario = view.findViewById(R.id.btn_next_scenario);
+        btnAutoGenerate = view.findViewById(R.id.btn_auto_generate);
 
         cardCompletion = view.findViewById(R.id.card_practice_completion);
         btnPracticeAgain = view.findViewById(R.id.btn_practice_again);
+        btnContinueAuto = view.findViewById(R.id.btn_continue_auto);
 
         btnOptionA.setOnClickListener(v -> showFeedback(0));
         btnOptionB.setOnClickListener(v -> showFeedback(1));
         btnOptionC.setOnClickListener(v -> showFeedback(2));
 
+        if (btnAutoGenerate != null) {
+            btnAutoGenerate.setOnClickListener(v -> {
+                if (cardCompletion != null) cardCompletion.setVisibility(View.GONE);
+                currentScenarioObj = PracticeScenarioGenerator.generateRandomScenario();
+                displayScenario(currentScenarioObj);
+                Toast.makeText(getContext(), "Auto-generated a new scenario! 🎲", Toast.LENGTH_SHORT).show();
+            });
+        }
+
         btnNextScenario.setOnClickListener(v -> {
             recordPracticeCompleted();
-            currentScenario++;
+            currentScenarioIndex++;
 
-            if (currentScenario >= titles.length) {
-                // Completed all scenarios!
+            if (currentScenarioIndex == PracticeScenarioGenerator.getBaseCount() && !currentScenarioObj.isAutoGenerated()) {
+                // Completed base scenarios
                 if (cardCompletion != null) {
                     cardCompletion.setVisibility(View.VISIBLE);
                 }
                 btnNextScenario.setVisibility(View.GONE);
                 tvFeedback.setVisibility(View.GONE);
             } else {
-                loadScenario();
+                currentScenarioObj = PracticeScenarioGenerator.getScenario(currentScenarioIndex);
+                displayScenario(currentScenarioObj);
             }
         });
 
         if (btnPracticeAgain != null) {
             btnPracticeAgain.setOnClickListener(v -> {
-                currentScenario = 0;
+                currentScenarioIndex = 0;
                 if (cardCompletion != null) {
                     cardCompletion.setVisibility(View.GONE);
                 }
-                loadScenario();
+                currentScenarioObj = PracticeScenarioGenerator.getScenario(currentScenarioIndex);
+                displayScenario(currentScenarioObj);
             });
         }
 
-        loadScenario();
-    }
-
-    private void loadScenario() {
-        tvScenarioCount.setText(
-                "SCENARIO " + (currentScenario + 1) + " OF " + titles.length
-        );
-
-        if (pbScenario != null) {
-            pbScenario.setMax(titles.length);
-            pbScenario.setProgress(currentScenario + 1);
+        if (btnContinueAuto != null) {
+            btnContinueAuto.setOnClickListener(v -> {
+                if (cardCompletion != null) {
+                    cardCompletion.setVisibility(View.GONE);
+                }
+                currentScenarioIndex++;
+                currentScenarioObj = PracticeScenarioGenerator.generateProceduralScenario(currentScenarioIndex);
+                displayScenario(currentScenarioObj);
+                Toast.makeText(getContext(), "Exploring auto-generated scenarios! ✨", Toast.LENGTH_SHORT).show();
+            });
         }
 
-        tvScenarioTitle.setText(titles[currentScenario]);
-        tvScenarioDescription.setText(descriptions[currentScenario]);
+        currentScenarioObj = PracticeScenarioGenerator.getScenario(currentScenarioIndex);
+        displayScenario(currentScenarioObj);
+    }
 
-        btnOptionA.setText(options[currentScenario][0]);
-        btnOptionB.setText(options[currentScenario][1]);
-        btnOptionC.setText(options[currentScenario][2]);
+    private void displayScenario(PracticeScenario scenario) {
+        if (scenario == null) return;
+        this.currentScenarioObj = scenario;
+
+        if (scenario.isAutoGenerated()) {
+            tvScenarioCount.setText("✨ AUTO-GENERATED • " + scenario.getCategory().toUpperCase());
+            if (pbScenario != null) {
+                pbScenario.setMax(10);
+                pbScenario.setProgress(Math.min(10, (currentScenarioIndex % 10) + 1));
+            }
+        } else {
+            tvScenarioCount.setText("SCENARIO " + (currentScenarioIndex + 1) + " OF " + PracticeScenarioGenerator.getBaseCount() + " • " + scenario.getCategory().toUpperCase());
+            if (pbScenario != null) {
+                pbScenario.setMax(PracticeScenarioGenerator.getBaseCount());
+                pbScenario.setProgress(currentScenarioIndex + 1);
+            }
+        }
+
+        tvScenarioTitle.setText(scenario.getTitle());
+        tvScenarioDescription.setText(scenario.getDescription());
+
+        String[] options = scenario.getOptions();
+        btnOptionA.setText(options[0]);
+        btnOptionB.setText(options[1]);
+        btnOptionC.setText(options[2]);
 
         tvFeedback.setVisibility(View.GONE);
         btnNextScenario.setVisibility(View.GONE);
@@ -205,23 +176,26 @@ public class PracticeFragment extends Fragment {
     }
 
     private void showFeedback(int selectedOption) {
-        tvFeedback.setText(
-                feedback[currentScenario][selectedOption]
-        );
+        if (currentScenarioObj == null) return;
 
+        tvFeedback.setText(currentScenarioObj.getFeedback()[selectedOption]);
         tvFeedback.setVisibility(View.VISIBLE);
 
         btnOptionA.setEnabled(true);
         btnOptionB.setEnabled(true);
         btnOptionC.setEnabled(true);
 
-        if (currentScenario == titles.length - 1) {
+        if (currentScenarioIndex == PracticeScenarioGenerator.getBaseCount() - 1 && !currentScenarioObj.isAutoGenerated()) {
             btnNextScenario.setText("Complete Practice 🎉");
         } else {
             btnNextScenario.setText("Next Scenario ➡️");
         }
 
         btnNextScenario.setVisibility(View.VISIBLE);
+
+        if (scrollView != null) {
+            scrollView.post(() -> scrollView.fullScroll(View.FOCUS_DOWN));
+        }
     }
 
     private void recordPracticeCompleted() {
@@ -268,7 +242,9 @@ public class PracticeFragment extends Fragment {
         btnOptionB = null;
         btnOptionC = null;
         btnNextScenario = null;
+        btnAutoGenerate = null;
         cardCompletion = null;
         btnPracticeAgain = null;
+        btnContinueAuto = null;
     }
 }

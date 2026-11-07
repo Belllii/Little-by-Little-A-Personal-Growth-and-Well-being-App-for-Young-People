@@ -13,6 +13,9 @@ public interface CheckInDao {
     @Insert
     void insertCheckIn(CheckIn checkIn);
 
+    @Update
+    void updateCheckIn(CheckIn checkIn);
+
     @Query("SELECT * FROM check_ins WHERE userId = :userId ORDER BY timestamp DESC LIMIT 1")
     CheckIn getLatestCheckIn(String userId);
 
