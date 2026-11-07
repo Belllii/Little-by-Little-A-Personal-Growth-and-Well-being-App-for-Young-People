@@ -146,7 +146,7 @@ graph TD
   - Background asynchronous execution via `Executors.newSingleThreadExecutor()` preventing ANR errors.
   - Implements `@Update void updateCheckIn(CheckIn checkIn)` and distinct calendar date streak aggregation (`calculateConsecutiveDayStreak`), preventing multiple mood taps on the same day from creating duplicate records or inflating streak metrics.
 - **Firebase Suite**:
-  - **Firebase Authentication**: User registration, login, profile updates, and secure session management.
+  - **Firebase Authentication**: Email/Password and one-tap Google Sign-In (`play-services-auth:20.7.0`, `GoogleAuthHelper.java`), user registration, login, profile updates, and secure session management.
   - **Firebase Realtime Database**: Synchronizes emotional check-ins partitioned by UID (`users/{uid}/checkins`).
   - **Cloud Firestore**: Real-time snapshot listeners for `community_feed` and private `users/{uid}/journals`.
   - **Firebase Storage**: Avatar picture uploads with download URL generation.
@@ -156,10 +156,10 @@ graph TD
 
 ## 📸 Feature Walkthrough & Screenshots
 
-| Welcome & Onboarding | Login Screen | Registration Screen |
+| Welcome & Onboarding (Google Auth) | Login Screen (Google Sign-In) | Registration Screen |
 |:---:|:---:|:---:|
-| ![Welcome Screen](docs/screenshots/welcome_flower_screen.png) | ![Login Screen](docs/screenshots/login_screen.png) | ![Registration Screen](docs/screenshots/reg_check.png) |
-| *Gentle entry portal with lavender flower artwork* | *Email/password authentication with validation* | *New member account creation* |
+| ![Welcome Screen](docs/screenshots/welcome_google_screen.png) | ![Login Screen](docs/screenshots/login_google_screen.png) | ![Registration Screen](docs/screenshots/reg_check.png) |
+| *Gentle entry portal with lavender flower & Google Sign-In* | *Email/password & Google Sign-In options* | *New member account creation* |
 
 | Home Dashboard (Calendar Streak) | Inline CBT Grounding Check-in | Mindful Calm Session (Foreground) |
 |:---:|:---:|:---:|

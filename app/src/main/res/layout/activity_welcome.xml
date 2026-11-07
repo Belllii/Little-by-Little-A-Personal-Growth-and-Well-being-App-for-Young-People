@@ -49,18 +49,48 @@
             android:layout_marginTop="12dp"
             android:layout_marginBottom="45dp"/>
 
+        <!-- Google Sign-In Button on Welcome -->
+        <LinearLayout
+            android:id="@+id/btnWelcomeGoogle"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:background="@drawable/bg_google_button"
+            android:gravity="center"
+            android:clickable="true"
+            android:focusable="true"
+            android:elevation="2dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:layout_marginBottom="16dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_google_logo"
+                android:contentDescription="Google Logo"
+                android:layout_marginEnd="12dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Continue with Google"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#3C4043"/>
+        </LinearLayout>
+
         <Button
             android:id="@+id/btnWelcomeLogin"
             android:layout_width="match_parent"
             android:layout_height="55dp"
-            android:text="Login"/>
+            android:text="Login with Email"/>
 
         <Button
             android:id="@+id/btnWelcomeRegister"
             android:layout_width="match_parent"
             android:layout_height="55dp"
             android:text="Create Account"
-            android:layout_marginTop="15dp"/>
+            android:layout_marginTop="12dp"/>
 
     </LinearLayout>
 </ScrollView>

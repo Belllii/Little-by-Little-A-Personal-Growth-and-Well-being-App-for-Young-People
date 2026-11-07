@@ -18,6 +18,7 @@ public class RegisterActivity extends AppCompatActivity {
     EditText etName, etEmail, etPassword;
     Button btnRegister;
     TextView tvLogin;
+    android.view.View btnRegisterGoogle;
 
     FirebaseAuth mAuth;
 
@@ -38,15 +39,52 @@ public class RegisterActivity extends AppCompatActivity {
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
         btnRegister = findViewById(R.id.btnRegister);
+        btnRegisterGoogle = findViewById(R.id.btnRegisterGoogle);
         tvLogin = findViewById(R.id.tvLogin);
 
         btnRegister.setOnClickListener(v -> registerUser());
+
+        if (btnRegisterGoogle != null) {
+            btnRegisterGoogle.setOnClickListener(v -> startGoogleSignIn());
+        }
 
         if (tvLogin != null) {
             tvLogin.setOnClickListener(v -> {
                 Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
                 startActivity(intent);
                 finish();
+            });
+        }
+    }
+
+    private void startGoogleSignIn() {
+        com.google.android.gms.auth.api.signin.GoogleSignInClient client =
+                GoogleAuthHelper.getGoogleSignInClient(this);
+        client.signOut().addOnCompleteListener(this, t -> {
+            Intent signInIntent = client.getSignInIntent();
+            startActivityForResult(signInIntent, GoogleAuthHelper.RC_SIGN_IN);
+        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == GoogleAuthHelper.RC_SIGN_IN) {
+            com.google.android.gms.tasks.Task<com.google.android.gms.auth.api.signin.GoogleSignInAccount> task =
+                    com.google.android.gms.auth.api.signin.GoogleSignIn.getSignedInAccountFromIntent(data);
+
+            GoogleAuthHelper.handleSignInResult(this, task, new GoogleAuthHelper.GoogleAuthCallback() {
+                @Override
+                public void onSuccess(com.google.firebase.auth.FirebaseUser user, String displayName, String email) {
+                    Toast.makeText(RegisterActivity.this, "Welcome, " + displayName + "! 🌱", Toast.LENGTH_SHORT).show();
+                    navigateToHome();
+                }
+
+                @Override
+                public void onError(String errorMessage) {
+                    Toast.makeText(RegisterActivity.this, errorMessage, Toast.LENGTH_LONG).show();
+                }
             });
         }
     }
