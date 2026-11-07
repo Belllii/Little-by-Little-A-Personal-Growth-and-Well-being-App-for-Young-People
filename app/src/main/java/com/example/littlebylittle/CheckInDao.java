@@ -15,4 +15,7 @@ public interface CheckInDao {
 
     @Query("SELECT * FROM check_ins ORDER BY timestamp DESC")
     java.util.List<CheckIn> getAllCheckIns();
+
+    @Query("SELECT COUNT(*) FROM check_ins")
+    int getTotalCheckIns();
 }

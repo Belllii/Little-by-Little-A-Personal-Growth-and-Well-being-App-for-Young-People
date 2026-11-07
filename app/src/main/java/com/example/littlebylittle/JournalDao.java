@@ -16,4 +16,7 @@ public interface JournalDao {
     List<JournalEntry> getAllEntries();
     @Query("DELETE FROM journal_entries WHERE id = :entryId")
     void deleteEntry(int entryId);
+
+    @Query("SELECT COUNT(*) FROM journal_entries")
+    int getTotalJournalEntries();
 }
