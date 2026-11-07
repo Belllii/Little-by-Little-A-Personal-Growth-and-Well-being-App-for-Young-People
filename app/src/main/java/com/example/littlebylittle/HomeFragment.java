@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import com.example.littlebylittle.databinding.FragmentHomeBinding;
 import android.content.Intent;
+import com.google.firebase.auth.FirebaseAuth;
 public class HomeFragment extends Fragment {
 
     private FragmentHomeBinding binding;
@@ -27,9 +28,25 @@ public class HomeFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Profile Avatar Click
+        // Profile Avatar Click
         binding.ivAvatar.setOnClickListener(v -> {
-            Intent intent = new Intent(requireContext(), RegisterActivity.class);
-            startActivity(intent);
+
+            if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+
+                Intent intent = new Intent(
+                        requireContext(),
+                        ProfileActivity.class);
+
+                startActivity(intent);
+
+            } else {
+
+                Intent intent = new Intent(
+                        requireContext(),
+                        LoginActivity.class);
+
+                startActivity(intent);
+            }
         });
 
         // Daily Emotional Check-in Listeners
