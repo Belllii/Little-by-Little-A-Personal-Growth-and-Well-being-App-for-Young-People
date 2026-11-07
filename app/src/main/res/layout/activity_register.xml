@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F7F3FF"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="28dp"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Join LittleByLittle"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="#49356D"
+            android:gravity="center"
+            android:layout_marginBottom="10dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Create your account and grow at your own pace."
+            android:textSize="15sp"
+            android:textColor="#777080"
+            android:gravity="center"
+            android:layout_marginBottom="32dp" />
+
+        <EditText
+            android:id="@+id/etName"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:hint="Your name"
+            android:inputType="textPersonName"
+            android:padding="14dp"
+            android:backgroundTint="#A78BCA" />
+
+        <EditText
+            android:id="@+id/etEmail"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:hint="Email address"
+            android:inputType="textEmailAddress"
+            android:padding="14dp"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="#A78BCA" />
+
+        <EditText
+            android:id="@+id/etPassword"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:hint="Password"
+            android:inputType="textPassword"
+            android:padding="14dp"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="#A78BCA" />
+
+        <Button
+            android:id="@+id/btnRegister"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:text="Create Account"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#8061A8"
+            android:layout_marginTop="28dp" />
+
+        <TextView
+            android:id="@+id/tvLogin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Already have an account? Log in"
+            android:textColor="#705398"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:layout_marginTop="22dp" />
+
+    </LinearLayout>
+</ScrollView>

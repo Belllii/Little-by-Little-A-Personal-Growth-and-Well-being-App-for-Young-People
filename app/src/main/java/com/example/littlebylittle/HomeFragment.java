@@ -18,6 +18,7 @@ public class HomeFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentHomeBinding.inflate(inflater, container, false);
+
         return binding.getRoot();
     }
 
@@ -26,9 +27,10 @@ public class HomeFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Profile Avatar Click
-        binding.ivAvatar.setOnClickListener(v -> 
-            Toast.makeText(requireContext(), "Profile: Dominic", Toast.LENGTH_SHORT).show()
-        );
+        binding.ivAvatar.setOnClickListener(v -> {
+            Intent intent = new Intent(requireContext(), RegisterActivity.class);
+            startActivity(intent);
+        });
 
         // Daily Emotional Check-in Listeners
         binding.btnMoodOverwhelmed.setOnClickListener(v -> onMoodSelected(

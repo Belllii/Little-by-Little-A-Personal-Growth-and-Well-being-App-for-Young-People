@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1055211191760",
+    "project_id": "littlebylittle-e1e67",
+    "storage_bucket": "littlebylittle-e1e67.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1055211191760:android:5c7bd5a85b98fb1824cdd5",
+        "android_client_info": {
+          "package_name": "com.example.littlebylittle"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD_IxFUUeATUniFzx0-8ugxObHgTsKp1gQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
