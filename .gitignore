@@ -14,3 +14,6 @@
 .cxx
 local.properties
 .idea/deploymentTargetDropDown.xml
+*.py
+__pycache__/
+*.pyc
